@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://mikeli20221102-ux.github.io/ktk-qiyuan/sitemap.xml

@@ -1,49 +1,104 @@
+/* KTK · 启源显示 — site.js v15. Shared by Chinese and English pages. */
 (function () {
+  var en = (document.documentElement.lang || '').toLowerCase().indexOf('en') === 0;
+  var L = en
+    ? { close: 'Close', prev: 'Previous', next: 'Next', none: 'No matching models.' }
+    : { close: '关闭', prev: '上一张', next: '下一张', none: '没有找到匹配的机型。' };
+
+  // ----- mobile menu -----
   var header = document.getElementById('site-header');
-  var layers = [].slice.call(document.querySelectorAll('.parallax'));
-  var still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  function onScroll() {
-    if (header && !document.body.classList.contains('inner')) {
-      header.classList.toggle('solid', window.scrollY > 80);
-    }
-    if (still) return;
-    layers.forEach(function (img) {
-      var box = img.parentElement.getBoundingClientRect();
-      if (box.bottom < 0 || box.top > innerHeight) return;
-      var t = (box.top + box.height / 2 - innerHeight / 2) / innerHeight;
-      img.style.transform = 'translateY(' + (t * -8 - 8) + '%)';
+  var burger = header && header.querySelector('.burger');
+  if (burger) {
+    var setOpen = function (open) {
+      header.classList.toggle('open', open);
+      burger.setAttribute('aria-expanded', open ? 'true' : 'false');
+    };
+    burger.addEventListener('click', function () { setOpen(!header.classList.contains('open')); });
+    header.querySelectorAll('nav a').forEach(function (a) {
+      a.addEventListener('click', function () { setOpen(false); });
+    });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') setOpen(false); });
+  }
+
+  // ----- home page: highlight the section being read -----
+  var navLinks = [].slice.call(document.querySelectorAll('header nav a[data-spy]'));
+  if (navLinks.length && 'IntersectionObserver' in window) {
+    var home = document.querySelector('header nav a[data-home]');
+    var seen = {};
+    var spy = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) { seen[e.target.id] = e.isIntersecting; });
+      var active = null;
+      navLinks.forEach(function (a) { if (!active && seen[a.getAttribute('data-spy')]) active = a; });
+      navLinks.forEach(function (a) { a.classList.toggle('on', a === active); });
+      if (home) home.classList.toggle('on', !active);
+    }, { rootMargin: '-45% 0px -50% 0px' });
+    navLinks.forEach(function (a) {
+      var sec = document.getElementById(a.getAttribute('data-spy'));
+      if (sec) spy.observe(sec);
     });
   }
-  window.addEventListener('scroll', onScroll, { passive: true });
-  onScroll();
 
-  var items = [].slice.call(document.querySelectorAll('.reveal'));
-  if ('IntersectionObserver' in window && !still) {
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (e) {
-        if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
-      });
-    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
-    items.forEach(function (el) { io.observe(el); });
-  } else {
-    items.forEach(function (el) { el.classList.add('in'); });
-  }
-
+  // ----- model page gallery -----
   document.querySelectorAll('[data-gallery]').forEach(function (g) {
     var main = g.querySelector('.main img');
     var badge = g.querySelector('.main .badge');
-    g.querySelectorAll('.thumbs button').forEach(function (b) {
+    var buttons = [].slice.call(g.querySelectorAll('.thumbs button'));
+    buttons.forEach(function (b) {
       b.addEventListener('click', function () {
         main.src = b.getAttribute('data-src');
         main.alt = b.getAttribute('data-alt') || '';
         if (badge) badge.hidden = !b.hasAttribute('data-lit');
-        g.querySelectorAll('.thumbs button').forEach(function (x) { x.classList.remove('on'); });
+        buttons.forEach(function (x) { x.classList.remove('on'); x.setAttribute('aria-pressed', 'false'); });
         b.classList.add('on');
+        b.setAttribute('aria-pressed', 'true');
       });
     });
   });
 
-  // The Baidu map page grabs focus on load, which drags the whole page down to it.
+  // ----- catalogue: series filter + search -----
+  var grid = document.getElementById('grid');
+  if (grid) {
+    var cards = [].slice.call(grid.querySelectorAll('.product'));
+    var tabs = [].slice.call(document.querySelectorAll('.side a[data-filter]'));
+    var box = document.querySelector('.search input');
+    var empty = document.createElement('p');
+    empty.className = 'empty';
+    empty.textContent = L.none;
+    empty.hidden = true;
+    grid.appendChild(empty);
+    var series = 'all';
+    var apply = function () {
+      var q = ((box && box.value) || '').toLowerCase().replace(/oled|iphone/g, '').replace(/\s+/g, ' ').trim();
+      var shown = 0;
+      cards.forEach(function (card) {
+        var okSeries = series === 'all' || card.getAttribute('data-series') === series;
+        var name = card.getAttribute('data-name');
+        var okQ = !q || name.indexOf(q) !== -1 || name.replace(/ /g, '').indexOf(q.replace(/ /g, '')) !== -1;
+        var ok = okSeries && okQ;
+        card.hidden = !ok;
+        if (ok) shown++;
+      });
+      empty.hidden = shown > 0;
+    };
+    tabs.forEach(function (a) {
+      a.addEventListener('click', function (e) {
+        e.preventDefault();
+        series = a.getAttribute('data-filter');
+        tabs.forEach(function (x) { x.classList.toggle('on', x === a); });
+        apply();
+      });
+    });
+    if (box) {
+      box.value = new URLSearchParams(location.search).get('q') || '';
+      box.addEventListener('input', apply);
+      box.form.addEventListener('submit', function (e) { e.preventDefault(); apply(); box.blur(); });
+    }
+    apply();
+  }
+
+  // ----- map: load only when it is about to be seen -----
+  // The Baidu map page grabs focus on load, which drags the whole page down to it,
+  // so hold the scroll position for a moment unless the visitor moves it themselves.
   var map = document.querySelector('.map iframe[data-src]');
   if (map) {
     var userMoved = false;
@@ -68,33 +123,53 @@
     }
   }
 
-  document.querySelectorAll('[data-zoom]').forEach(function (box) {
-    var imgs = [].slice.call(box.querySelectorAll('img'));
+  // ----- lightbox for workshop photos -----
+  document.querySelectorAll('[data-zoom]').forEach(function (zone) {
+    var imgs = [].slice.call(zone.querySelectorAll('img'));
     if (!imgs.length) return;
     var lb = document.createElement('div');
     lb.className = 'lightbox';
     lb.hidden = true;
-    lb.innerHTML = '<button class="lb-close" aria-label="关闭">×</button>' +
-      '<button class="lb-prev" aria-label="上一张">‹</button>' +
+    lb.setAttribute('role', 'dialog');
+    lb.setAttribute('aria-modal', 'true');
+    lb.innerHTML = '<button class="lb-close" aria-label="' + L.close + '">×</button>' +
+      '<button class="lb-prev" aria-label="' + L.prev + '">‹</button>' +
       '<figure><img alt=""><figcaption></figcaption></figure>' +
-      '<button class="lb-next" aria-label="下一张">›</button>';
+      '<button class="lb-next" aria-label="' + L.next + '">›</button>';
     document.body.appendChild(lb);
     var big = lb.querySelector('img');
     var cap = lb.querySelector('figcaption');
     var at = 0;
+    var opener = null;
     function show(i) {
       at = (i + imgs.length) % imgs.length;
       var src = imgs[at];
       big.src = src.currentSrc || src.src;
       big.alt = src.alt;
-      var h = src.closest('article') && src.closest('article').querySelector('h3');
+      var art = src.closest('article');
+      var h = art && art.querySelector('h3');
       cap.textContent = (h ? h.textContent + ' · ' : '') + src.alt;
     }
-    function open(i) { show(i); lb.hidden = false; document.body.classList.add('lb-open'); }
-    function close() { lb.hidden = true; document.body.classList.remove('lb-open'); }
+    function open(i) {
+      opener = document.activeElement;
+      show(i);
+      lb.hidden = false;
+      document.body.classList.add('lb-open');
+      lb.querySelector('.lb-close').focus();
+    }
+    function close() {
+      lb.hidden = true;
+      document.body.classList.remove('lb-open');
+      if (opener && opener.focus) opener.focus();
+    }
     imgs.forEach(function (img, i) {
       img.classList.add('zoomable');
+      img.tabIndex = 0;
+      img.setAttribute('role', 'button');
       img.addEventListener('click', function () { open(i); });
+      img.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(i); }
+      });
     });
     lb.querySelector('.lb-close').addEventListener('click', close);
     lb.querySelector('.lb-prev').addEventListener('click', function (e) { e.stopPropagation(); show(at - 1); });
