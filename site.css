@@ -1,4 +1,4 @@
-/* KTK · 启源显示 — site.css v17
+/* KTK · 启源显示 — site.css v19
    Shared by the Chinese pages (/) and the English pages (/en/). */
 
 :root {
@@ -112,7 +112,7 @@ header.site.solid { box-shadow:0 6px 24px rgba(20,27,51,.06); }
 .catalog .products { grid-template-columns:repeat(3, 1fr); }
 .product { background:#fff; border-radius:var(--radius); overflow:hidden; display:block; box-shadow:var(--shadow); transition:box-shadow .25s, transform .25s; }
 .product:hover { box-shadow:var(--shadow-lg); transform:translateY(-3px); }
-.product .pic { aspect-ratio:1.25 / 1; background:#0b1020; overflow:hidden; }
+.product .pic { aspect-ratio:1.25 / 1; background:#eef0f6; overflow:hidden; }
 .product .pic img { width:100%; height:100%; object-fit:cover; transition:transform .25s; }
 .product:hover .pic img { transform:scale(1.05); }
 .product .meta { padding:12px 16px 14px; border-top:1px solid var(--line); display:flex; align-items:baseline; justify-content:space-between; gap:8px; }
@@ -242,12 +242,20 @@ html[lang="en"] .split .slogan { letter-spacing:0; }
 .certs h3 { font-size:16px; margin-bottom:4px; }
 .certs p { color:var(--muted); font-size:13px; line-height:1.6; }
 
-/* ---------- why: icons ---------- */
-.why-grid article { position:relative; border:1px solid var(--line); transition:transform .25s, box-shadow .25s, border-color .25s; }
-.why-grid article:hover { transform:translateY(-4px); box-shadow:var(--shadow-lg); border-color:transparent; }
-.why-grid .ico { width:52px; height:52px; border-radius:14px; background:linear-gradient(135deg, #1a7bff, #0052d6); color:#fff; display:flex; align-items:center; justify-content:center; margin-bottom:18px; box-shadow:0 10px 22px rgba(0,102,255,.28); }
-.why-grid .ico svg { width:26px; height:26px; }
-.why-grid .no { position:absolute; right:20px; top:18px; margin:0; font-size:40px; color:#eef1f7; }
+/* ---------- why: two feature cards + three supporting cards ---------- */
+.why-grid { grid-template-columns:repeat(6, 1fr); gap:20px; }
+.why-grid article { grid-column:span 2; background:#fff; border:1px solid var(--line); border-radius:20px; box-shadow:none; padding:30px 28px 32px; transition:transform .25s, box-shadow .25s; }
+.why-grid article:nth-child(-n+2) { grid-column:span 3; border-color:transparent; padding:36px 32px 44px; }
+.why-grid article:nth-child(1) { background:linear-gradient(135deg, #ffe3dc 0%, #ffd3ca 100%); }
+.why-grid article:nth-child(2) { background:linear-gradient(135deg, #dcedff 0%, #c9e3ff 100%); }
+.why-grid article:hover { transform:translateY(-4px); box-shadow:var(--shadow-lg); }
+.why-grid .ico { width:56px; height:56px; border-radius:16px; background:#fff; color:var(--ink); display:flex; align-items:center; justify-content:center; margin-bottom:22px; box-shadow:0 6px 18px rgba(40,60,110,.10); }
+.why-grid article:nth-child(n+3) .ico { background:var(--soft); box-shadow:none; color:var(--blue); }
+.why-grid .ico svg { width:28px; height:28px; }
+.why-grid h3 { font-size:20px; margin-bottom:10px; }
+.why-grid article:nth-child(-n+2) h3 { font-size:22px; }
+.why-grid p { font-size:14.5px; line-height:1.75; }
+.why-grid article:nth-child(-n+2) p { color:#3a4155; max-width:34em; }
 
 /* ---------- workshop gallery ---------- */
 .shots { display:grid; grid-template-columns:repeat(4, 1fr); gap:14px; }
@@ -333,7 +341,10 @@ html[lang="en"] .lightbox figcaption { letter-spacing:0; }
   .split { gap:24px; }
   .split > img { height:260px; }
   .steps { grid-template-columns:1fr 1fr; }
-  .why-grid, .foot-grid { grid-template-columns:1fr; }
+  .foot-grid { grid-template-columns:1fr; }
+  .why-grid { grid-template-columns:1fr 1fr; gap:14px; }
+  .why-grid article, .why-grid article:nth-child(-n+2) { grid-column:span 1; padding:24px 20px 26px; }
+  .why-grid article:nth-child(-n+2) { grid-column:span 2; }
   .detail { gap:24px; }
   .pd-info { position:static; }
   .thumbs { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; }
@@ -368,6 +379,7 @@ html[lang="en"] .lightbox figcaption { letter-spacing:0; }
 }
 @media (max-width:560px) {
   .shots { gap:8px; }
+  .why-grid article, .why-grid article:nth-child(-n+2) { grid-column:span 2; }
   .certs { grid-template-columns:1fr 1fr; gap:12px; }
   .certs .doc { padding:10px 10px 0; }
   .certs .txt { padding:12px; }
