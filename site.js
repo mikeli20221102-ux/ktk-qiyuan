@@ -1,4 +1,4 @@
-/* KTK · 启源显示 — site.js v15. Shared by Chinese and English pages. */
+/* KTK · 启源显示 — site.js v16. Shared by Chinese and English pages. */
 (function () {
   var en = (document.documentElement.lang || '').toLowerCase().indexOf('en') === 0;
   var L = en
@@ -7,6 +7,15 @@
 
   // ----- mobile menu -----
   var header = document.getElementById('site-header');
+  // the home page header floats over the hero video and turns solid once scrolled
+  if (header && document.body.classList.contains('home')) {
+    var solid = function () {
+      header.classList.toggle('solid', window.scrollY > 40 || header.classList.contains('open'));
+    };
+    window.addEventListener('scroll', solid, { passive: true });
+    header.addEventListener('click', function () { setTimeout(solid, 0); });
+    solid();
+  }
   var burger = header && header.querySelector('.burger');
   if (burger) {
     var setOpen = function (open) {
@@ -37,6 +46,46 @@
       if (sec) spy.observe(sec);
     });
   }
+
+  // ----- reveal sections as they scroll into view -----
+  var still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var items = [].slice.call(document.querySelectorAll('.reveal'));
+  if ('IntersectionObserver' in window && !still) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+      });
+    }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+    items.forEach(function (el) { io.observe(el); });
+  } else {
+    items.forEach(function (el) { el.classList.add('in'); });
+  }
+
+  // ----- hero video: skip it for visitors who ask for reduced motion or data saving -----
+  var heroVideo = document.querySelector('.banner video');
+  if (heroVideo) {
+    var saver = navigator.connection && navigator.connection.saveData;
+    if (still || saver) {
+      heroVideo.removeAttribute('autoplay');
+      heroVideo.pause();
+    } else {
+      var tryPlay = heroVideo.play();
+      if (tryPlay && tryPlay.catch) tryPlay.catch(function () {});
+    }
+  }
+
+  // ----- factory film: plays with sound and controls after a click -----
+  document.querySelectorAll('.film').forEach(function (film) {
+    var v = film.querySelector('video');
+    var b = film.querySelector('.play');
+    if (!v || !b) return;
+    b.addEventListener('click', function () {
+      b.hidden = true;
+      v.controls = true;
+      var p = v.play();
+      if (p && p.catch) p.catch(function () {});
+    });
+  });
 
   // ----- model page gallery -----
   document.querySelectorAll('[data-gallery]').forEach(function (g) {
