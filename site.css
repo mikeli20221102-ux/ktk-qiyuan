@@ -401,3 +401,17 @@ html[lang="en"] .lightbox figcaption { letter-spacing:0; }
   html { scroll-behavior:auto; }
   *, *::before, *::after { transition:none !important; }
 }
+
+
+/* ---------- wechat qr ---------- */
+.wx { display:flex; gap:16px; align-items:center; margin-top:6px; }
+.wx img { width:148px; height:auto; border-radius:12px; background:#fff; box-shadow:var(--shadow); }
+.wx p { margin:0; font-size:14px; color:var(--text); line-height:1.55; }
+.wx b { font-weight:600; color:var(--ink); }
+.foot-wx { margin-top:10px; }
+.foot-wx img { width:110px; height:auto; border-radius:10px; background:#fff; }
+.foot-wx p { margin:8px 0 0; font-size:13px; }
+@media (max-width:720px) {
+  .wx { flex-direction:column; align-items:flex-start; }
+  .wx img { width:160px; }
+}
