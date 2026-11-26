@@ -1,4 +1,4 @@
-/* KTK · 启源显示 — site.css v20 (warm cream + gold)
+/* KTK · 启源显示 — site.css v21 (warm cream + gold)
    Shared by the Chinese pages (/) and the English pages (/en/). */
 
 :root {
@@ -230,6 +230,10 @@ footer p { margin-bottom:6px; }
 .split .slogan { color:var(--gold); font-size:20px; font-weight:700; letter-spacing:.06em; margin-top:4px; }
 html[lang="en"] .split .slogan { letter-spacing:0; }
 #shots .film { max-width:960px; margin:0 auto 22px; }
+.shots-h { font-size:20px; margin:40px 0 14px; display:flex; align-items:center; gap:12px; }
+.shots-h::before { content:""; width:22px; height:2px; background:var(--gold); }
+.shots.three { grid-template-columns:repeat(3, 1fr); }
+.shots.three figure:first-child { grid-column:auto; grid-row:auto; aspect-ratio:4 / 3; }
 .more-link { margin-top:22px; }
 .page-banner .crumb { margin-bottom:6px; }
 
@@ -376,6 +380,7 @@ html[lang="en"] .lightbox figcaption { letter-spacing:0; }
 }
 @media (max-width:900px) {
   .shots { grid-template-columns:repeat(2, 1fr); }
+  .shots.three { grid-template-columns:repeat(3, 1fr); }
   .band h2 { font-size:24px; }
   .banner .copy { padding-top:60px; }
 }
